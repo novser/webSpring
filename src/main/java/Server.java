@@ -67,12 +67,15 @@ public class Server extends Thread {
                     return;
                 }
 
+                new Request(parts[0], parts[2], parts[1]); //TODO убрать
                 final var path = parts[1];
                 if (!validPaths.contains(path)) {
                     writeResponse(out, 404, 0, null);
                     out.flush();
                     return;
                 }
+
+                new Request(parts[0], parts[2], parts[1]);
 
                 final var filePath = Path.of(".", "public", path);
                 final var mimeType = Files.probeContentType(filePath);
