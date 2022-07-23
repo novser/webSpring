@@ -67,8 +67,14 @@ public class Server extends Thread {
                     return;
                 }
 
-                new Request(parts[0], parts[2], parts[1]); //TODO убрать
-                final var path = parts[1];
+                var path = "";
+                int indexParamSymbol = parts[1].indexOf("?");
+                if (indexParamSymbol != -1) {
+                    int indexParamSymbolEnd = parts[1].indexOf(".");
+                    path = parts[1].replace(parts[1].substring(indexParamSymbol, indexParamSymbolEnd), "");
+                } else {
+                    path = parts[1];
+                }
                 if (!validPaths.contains(path)) {
                     writeResponse(out, 404, 0, null);
                     out.flush();

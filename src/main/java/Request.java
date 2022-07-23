@@ -1,5 +1,7 @@
+import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 
+import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -43,7 +45,7 @@ public class Request {
         parameters.add(value);
     }
 
-    public void setHeader (String name, String value) {
+    public void setHeader(String name, String value) {
         headers.put(name, value);
     }
 
@@ -56,7 +58,7 @@ public class Request {
         parsingHeaders(parts[0]);
     }
 
-    private void  parsingBodyParam() {
+    private void parsingBodyParam() {
         if (body != null) {
             Map<String, String> result = Arrays.stream(body.split("\r\n"))
                     .map(element -> element.split(":"))
@@ -65,35 +67,35 @@ public class Request {
             result.forEach(this::setParam);
         }
     }
+
     private void parsingHeaders(String str) {
         str.replace("HTTP/1.1", "");
-        Map<String, String> result = Arrays.stream(body.split("\r\n"))
-                .map(element -> element.split(":"))
-                .collect(Collectors.toMap(element -> element[0], element -> element[1]));
+        if (body != null) {
+            Map<String, String> result = Arrays.stream(body.split("\r\n"))
+                    .map(element -> element.split(":"))
+                    .collect(Collectors.toMap(element -> element[0], element -> element[1]));
 
-        result.forEach(this::setHeader);
+            result.forEach(this::setHeader);
+        }
     }
 
     public void setQueryString(String queryString) {
         this.queryString = queryString;
-//        queryString = queryString.replace("?", " DELIMITER ");
-//        String[] parts = queryString.split("DELIMITER");
+        String strURL = queryString;
+        int indexSymbol = queryString.indexOf(".");
+        if (indexSymbol != -1) {
+            strURL = queryString.replace(queryString.substring(indexSymbol), "");
+        }
+        var params = URLEncodedUtils.parse(URI.create(strURL), "UTF-8");
 
-        URLEncodedUtils.parse(queryString);
-
-
-//        if (parts.length > 1) {
-//            parsingQueryBodyParam(parts[1]);
-//        }
+        params.forEach(element -> setQueryParam(element.getName(), element.getValue()));
     }
 
-//    private void parsingQueryBodyParam(String str) {
-//        Map<String, String> result = Arrays.stream(body.split("&"))
-//                .map(element -> element.split(":"))
-//                .collect(Collectors.toMap(element -> element[0], element -> element[1]));
-//
-//        result.forEach(this::setQueryParam);
-//    }
+    public List<String> getQueryParam(String name) {
+        return queryParams.get(name);
+    }
 
-
+    public Map<String, List<String>> getParams() {
+        return params;
+    }
 }
